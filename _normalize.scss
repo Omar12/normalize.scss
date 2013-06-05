@@ -3,15 +3,28 @@
 // normalize.css v2.1.1 | MIT License | git.io/normalize
 // =============================================================================
 
+// Forked from:
+// https://github.com/kristerkari/normalize.scss/blob/master/_normalize.scss
+
 // =============================================================================
 // Normalize.scss settings
 // =============================================================================
 
+// This is a modified version of normalize to fit Sassy Pants needs.
+// The philosophy into adding more variables to normalize is to reduce
+// the filesize by not adding the normalized elements if they are not used
+// or needed.
 
 // Set to true if you want to add support for IE6 and IE7
 // Notice: setting to true might render some elements
 // slightly differently than when set to false
 $legacy_support_for_ie: false !default; // Used also in Compass
+
+// Selective support
+$normalize_media: false !default; // Media tags (audio, video, canvas)
+$normalize_links: false !default;
+$normalize_forms: false !default; // Form elements
+$normalize_preformatted: false !default; // Preformatted or code text
 
 
 // Set the default font family here so you don't have to override it later
@@ -34,7 +47,7 @@ $h5_margin: 1.67em 0 !default;
 $h6_margin: 2.33em 0 !default;    
 
 $background: #fff !default;    
-$color: #000 !default;    
+$color: #222 !default;    
 
 // =============================================================================
 // HTML5 display definitions
@@ -58,22 +71,26 @@ summary {
 
 // Corrects inline-block display not defined in IE6/7/8/9 & FF3
 
-audio,
-canvas,
-video {
-    display: inline-block;
-    @if $legacy_support_for_ie {
-        *display: inline;
-        *zoom: 1;
+@if $normalize_media == true {
+    audio,
+    canvas,
+    video {
+        display: inline-block;
+        @if $legacy_support_for_ie {
+            *display: inline;
+            *zoom: 1;
+        }
     }
-}
+
 
 // 1. Prevents modern browsers from displaying 'audio' without controls
 // 2. Remove excess height in iOS5 devices
 
-audio:not([controls]) {
-    display: none; // 1
-    height: 0; // 2
+    audio:not([controls]) {
+        display: none; // 1
+        height: 0; // 2
+    }
+
 }
 
 // Addresses styling for 'hidden' attribute not present in IE8/9
@@ -90,13 +107,25 @@ audio:not([controls]) {
 //    http://clagnut.com/blog/348/#c790
 // 2. Prevents iOS text size adjust after orientation change, without disabling user zoom
 //    www.456bereastreet.com/archive/201012/controlling_text_size_in_safari_for_ios_without_disabling_user_zoom/
+// 3. Corrects the box model issue when start adding widths and paddings to our grid columns. No need to subtract
+//    the width value with the value of the padding.
+//    http://paulirish.com/2012/box-sizing-border-box-ftw/
+
+*,
+*:after,
+*:before {
+    -moz-box-sizing: border-box; // 3
+    -webkit-box-sizing: border-box; // 3
+    box-sizing: border-box; // 3
+}
+
 
 html {
     @if $legacy_support_for_ie {
         font-size: 100%; // 1
     }
-		background: $background;
-		color: $color;
+        background: $background;
+        color: $color;
     -webkit-text-size-adjust: 100%; // 2
     -ms-text-size-adjust: 100%; // 2
 }
@@ -117,6 +146,37 @@ body {
     margin: 0;
 }
 
+// Corrects font family set oddly in IE6, S4/5, Chrome
+// en.wikipedia.org/wiki/User:Davidgothberg/Test59
+
+@if $normalize_preformatted == true {
+    code,
+    kbd,
+    pre,
+    samp {
+        font-family: monospace, serif;
+        @if $legacy_support_for_ie {
+            _font-family: 'courier new', monospace;
+        }    
+        font-size: 1em;
+    }
+
+    // Improves readability of pre-formatted text in all browsers
+
+    pre {
+        white-space: pre;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+}
+
+// Set consistent quote types.
+
+q {
+    quotes: "\201C" "\201D" "\2018" "\2019";
+}
+
+
 // =============================================================================
 // Links
 // =============================================================================
@@ -124,20 +184,21 @@ body {
 // 1. Addresses outline displayed oddly in Chrome
 // 2. Improves readability when focused and also mouse hovered in all browsers
 //    people.opera.com/patrickl/experiments/keyboard/test
+code
+    a {
 
-a {
+        // 1
 
-    // 1
+        &:focus {
+            outline: thin dotted;
+        }
 
-    &:focus {
-        outline: thin dotted;
-    }
+        // 2
 
-    // 2
-
-    &:hover,
-    &:active {
-        outline: 0;
+        &:hover,
+        &:active {
+            outline: 0;
+        }
     }
 }
 
@@ -220,27 +281,7 @@ mark {
     }
 }
 
-// Corrects font family set oddly in IE6, S4/5, Chrome
-// en.wikipedia.org/wiki/User:Davidgothberg/Test59
 
-code,
-kbd,
-pre,
-samp {
-    font-family: monospace, serif;
-    @if $legacy_support_for_ie {
-        _font-family: 'courier new', monospace;
-    }    
-    font-size: 1em;
-}
-
-// Improves readability of pre-formatted text in all browsers
-
-pre {
-    white-space: pre;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
 
 // Set consistent quote types.
 
@@ -300,13 +341,13 @@ sub {
     menu,
     ol,
     ul {
-        margin: 1em 0;
+        margin: 0;
     }
 }
 
 @if $legacy_support_for_ie {
     dd {
-        margin: 0 0 0 40px;
+        margin: 0;
     }
 }
 
@@ -315,7 +356,7 @@ sub {
     menu,
     ol,
     ul {
-        padding: 0 0 0 40px;
+        padding: 0;
     }
 }
 
@@ -365,145 +406,148 @@ figure {
 // Forms
 // =============================================================================
 
-// Corrects margin displayed oddly in IE6/7
-@if $legacy_support_for_ie {
-    form {
-        margin: 0;
+@if $normalize_forms == true {
+
+    // Corrects margin displayed oddly in IE6/7
+    @if $legacy_support_for_ie {
+        form {
+            margin: 0;
+        }
     }
-}
 
-// Define consistent border, margin, and padding
+    // Define consistent border, margin, and padding
 
-fieldset {
-    border: 1px solid #c0c0c0;
-    margin: 0 2px;
-    padding: 0.35em 0.625em 0.75em;
-}
-
-// 1. Corrects color not being inherited in IE6/7/8/9
-// 2. Remove padding so people aren't caught out if they zero out fieldsets.
-// 3. Corrects text not wrapping in FF3 
-// 4. Corrects alignment displayed oddly in IE6/7
-
-legend {
-    border: 0; // 1
-    padding: 0; // 2
-    white-space: normal; // 3
-    @if $legacy_support_for_ie {
-        *margin-left: -7px; // 4
-    }    
-}
-
-// 1. Correct font family not being inherited in all browsers.
-// 2. Corrects font size not being inherited in all browsers
-// 3. Addresses margins set differently in IE6/7, FF3+, S5, Chrome
-// 4. Improves appearance and consistency in all browsers
-
-button,
-input,
-select,
-textarea {
-    font-family: inherit; // 1
-    font-size: 100%; // 2
-    margin: 0; // 3
-    vertical-align: baseline; // 4
-    @if $legacy_support_for_ie {
-        *vertical-align: middle; // 4
-    }    
-}
-
-// Addresses FF3/4 setting line-height on 'input' using !important in the UA stylesheet
-
-button,
-input {
-    line-height: normal;
-}
-
-// Address inconsistent `text-transform` inheritance for `button` and `select`.
-// All other form control elements do not inherit `text-transform` values.
-// Correct `button` style inheritance in Chrome, Safari 5+, and IE 8+.
-// Correct `select` style inheritance in Firefox 4+ and Opera.
-
-button,
-select {
-    text-transform: none;
-}
-
-// 1. Avoid the WebKit bug in Android 4.0.* where (2) destroys native `audio`
-//    and `video` controls
-// 2. Corrects inability to style clickable 'input' types in iOS
-// 3. Improves usability and consistency of cursor style between image-type
-//    'input' and others
-// 4. Removes inner spacing in IE7 without affecting normal text inputs
-//    Known issue: inner spacing remains in IE6
-
-button,
-html input[type="button"], // 1
-input[type="reset"], 
-input[type="submit"] {
-    -webkit-appearance: button; // 2
-    cursor: pointer; // 3
-    @if $legacy_support_for_ie {
-        *overflow: visible;  // 4
-    }    
-}
-
-// Re-set default cursor for disabled elements
-
-button[disabled],
-input[disabled] {
-    cursor: default;
-}
-
-// 1. Addresses box sizing set to content-box in IE8/9
-// 2. Removes excess padding in IE8/9
-// 3. Removes excess padding in IE7
-//    Known issue: excess padding remains in IE6
-
-input[type="checkbox"],
-input[type="radio"] {
-    box-sizing: border-box; // 1
-    padding: 0; // 2
-    @if $legacy_support_for_ie {
-        *height: 13px; // 3
-        *width: 13px; // 3
+    fieldset {
+        border: 1px solid #c0c0c0;
+        margin: 0 2px;
+        padding: 0.35em 0.625em 0.75em;
     }
-}
 
-// 1. Addresses appearance set to searchfield in S5, Chrome
-// 2. Addresses box-sizing set to border-box in S5, Chrome (include -moz to future-proof)
+    // 1. Corrects color not being inherited in IE6/7/8/9
+    // 2. Remove padding so people aren't caught out if they zero out fieldsets.
+    // 3. Corrects text not wrapping in FF3 
+    // 4. Corrects alignment displayed oddly in IE6/7
 
-input[type="search"] {
-    -webkit-appearance: textfield; // 1
-    -moz-box-sizing: content-box;
-    -webkit-box-sizing: content-box; // 2
-    box-sizing: content-box;
-}
-
-// Remove inner padding and search cancel button in Safari 5 and Chrome
-// on OS X.
-
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-decoration {
-    -webkit-appearance: none;
-}
-
-// Removes inner padding and border in FF3+
-// www.sitepen.com/blog/2008/05/14/the-devils-in-the-details-fixing-dojos-toolbar-buttons/
-
-button, input {
-    &::-moz-focus-inner {
-        border: 0;
-        padding: 0;
+    legend {
+        border: 0; // 1
+        padding: 0; // 2
+        white-space: normal; // 3
+        @if $legacy_support_for_ie {
+            *margin-left: -7px; // 4
+        }    
     }
-}
 
-// 1. Removes default vertical scrollbar in IE6/7/8/9
-// 2. Improves readability and alignment in all browsers
+    // 1. Correct font family not being inherited in all browsers.
+    // 2. Corrects font size not being inherited in all browsers
+    // 3. Addresses margins set differently in IE6/7, FF3+, S5, Chrome
+    // 4. Improves appearance and consistency in all browsers
 
-textarea {
-    overflow: auto; // 1
-    vertical-align: top; // 2
+    button,
+    input,
+    select,
+    textarea {
+        font-family: inherit; // 1
+        font-size: 100%; // 2
+        margin: 0; // 3
+        vertical-align: baseline; // 4
+        @if $legacy_support_for_ie {
+            *vertical-align: middle; // 4
+        }    
+    }
+
+    // Addresses FF3/4 setting line-height on 'input' using !important in the UA stylesheet
+
+    button,
+    input {
+        line-height: normal;
+    }
+
+    // Address inconsistent `text-transform` inheritance for `button` and `select`.
+    // All other form control elements do not inherit `text-transform` values.
+    // Correct `button` style inheritance in Chrome, Safari 5+, and IE 8+.
+    // Correct `select` style inheritance in Firefox 4+ and Opera.
+
+    button,
+    select {
+        text-transform: none;
+    }
+
+    // 1. Avoid the WebKit bug in Android 4.0.* where (2) destroys native `audio`
+    //    and `video` controls
+    // 2. Corrects inability to style clickable 'input' types in iOS
+    // 3. Improves usability and consistency of cursor style between image-type
+    //    'input' and others
+    // 4. Removes inner spacing in IE7 without affecting normal text inputs
+    //    Known issue: inner spacing remains in IE6
+
+    button,
+    html input[type="button"], // 1
+    input[type="reset"], 
+    input[type="submit"] {
+        -webkit-appearance: button; // 2
+        cursor: pointer; // 3
+        @if $legacy_support_for_ie {
+            *overflow: visible;  // 4
+        }    
+    }
+
+    // Re-set default cursor for disabled elements
+
+    button[disabled],
+    input[disabled] {
+        cursor: default;
+    }
+
+    // 1. Addresses box sizing set to content-box in IE8/9
+    // 2. Removes excess padding in IE8/9
+    // 3. Removes excess padding in IE7
+    //    Known issue: excess padding remains in IE6
+
+    input[type="checkbox"],
+    input[type="radio"] {
+        box-sizing: border-box; // 1
+        padding: 0; // 2
+        @if $legacy_support_for_ie {
+            *height: 13px; // 3
+            *width: 13px; // 3
+        }
+    }
+
+    // 1. Addresses appearance set to searchfield in S5, Chrome
+    // 2. Addresses box-sizing set to border-box in S5, Chrome (include -moz to future-proof)
+
+    input[type="search"] {
+        -webkit-appearance: textfield; // 1
+        -moz-box-sizing: content-box;
+        -webkit-box-sizing: content-box; // 2
+        box-sizing: content-box;
+    }
+
+    // Remove inner padding and search cancel button in Safari 5 and Chrome
+    // on OS X.
+
+    input[type="search"]::-webkit-search-cancel-button,
+    input[type="search"]::-webkit-search-decoration {
+        -webkit-appearance: none;
+    }
+
+    // Removes inner padding and border in FF3+
+    // www.sitepen.com/blog/2008/05/14/the-devils-in-the-details-fixing-dojos-toolbar-buttons/
+
+    button, input {
+        &::-moz-focus-inner {
+            border: 0;
+            padding: 0;
+        }
+    }
+
+    // 1. Removes default vertical scrollbar in IE6/7/8/9
+    // 2. Improves readability and alignment in all browsers
+
+    textarea {
+        overflow: auto; // 1
+        vertical-align: top; // 2
+    }
 }
 
 // =============================================================================
